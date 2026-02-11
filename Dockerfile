@@ -5,7 +5,7 @@ FROM base AS deps
 WORKDIR /app
 COPY package.json package-lock.json* yarn.lock* pnpm-lock.yaml* ./
 RUN \
-  if [ -f package-lock.json ]; then npm ci; \
+  if [ -f package-lock.json ]; then npm install; \
   elif [ -f yarn.lock ]; then corepack enable && yarn install --frozen-lockfile; \
   elif [ -f pnpm-lock.yaml ]; then corepack enable && pnpm i --frozen-lockfile; \
   else npm install; fi
@@ -29,7 +29,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder /app/knex ./knex
 COPY --from=builder /app/knexfile.cjs ./
 COPY --from=builder /app/package.json ./
-RUN npm install knex pg --omit=dev
+RUN npm install knex objection pg --omit=dev
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000
