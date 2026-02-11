@@ -74,7 +74,7 @@ export default function CreateCategoryDialog({
         icon: '',
         type,
       })
-
+  console.log(isPending)
       toast.success(`Category ${data.name} created successfully.`, {
         id: 'create-category',
       })

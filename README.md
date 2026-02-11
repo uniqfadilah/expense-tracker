@@ -28,9 +28,8 @@ A simple, efficient, and user-friendly expense tracker that helps you manage you
    ```
 
 2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+   - **Development (local):** `yarn` or `yarn install`
+   - **Production / Docker:** `npm install` (uses `package-lock.json`)
 
 3. **Set up environment variables:**
    - Create a `.env` file based on `.env.example`
@@ -44,8 +43,9 @@ A simple, efficient, and user-friendly expense tracker that helps you manage you
 
 5. **Start the development server:**
    ```bash
-   npm run dev
+   yarn dev
    ```
+   (or `npm run dev`)
 
 6. **Visit:** [http://localhost:3000](http://localhost:3000)
 

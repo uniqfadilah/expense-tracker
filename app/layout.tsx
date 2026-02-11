@@ -28,6 +28,7 @@ export default function RootLayout({
       appearance={{
         baseTheme: undefined,
       }}
+      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
       afterSignOutUrl="/sign-in"
     >
       <html lang="en" suppressHydrationWarning>

@@ -2,6 +2,13 @@ import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  serverExternalPackages: [
+    'knex',
+    'objection',
+    'pg',
+    'oracledb',
+    'pg-query-stream',
+  ],
   eslint: {
     ignoreDuringBuilds: true,
   },
