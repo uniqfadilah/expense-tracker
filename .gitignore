@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Cursor IDE / agent (keep out of git)
+.cursor/
+AGENTS.md
+.cursorrules
