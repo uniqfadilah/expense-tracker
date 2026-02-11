@@ -30,7 +30,7 @@ import { DataTableViewOptions } from '@/components/datatable/column-toggle'
 import { Button } from '@/components/ui/button'
 import { download, generateCsv, mkConfig } from 'export-to-csv'
 import { DownloadIcon, MoreHorizontal, TrashIcon } from 'lucide-react'
-import { Transaction } from '@prisma/client'
+import { Transaction } from '@/lib/db-types'
 import {
   DropdownMenu,
   DropdownMenuTrigger,

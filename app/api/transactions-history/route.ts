@@ -1,6 +1,6 @@
 import { OverviewQuerySchema } from "@/components/schema/overview";
 import { GetFormatterForCurrency } from "@/lib/helpers";
-import { prisma } from "@/lib/prisma";
+import { TransactionModel, UserSettingsModel } from "@/lib/models";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
@@ -28,32 +28,22 @@ export async function GET(request: Request){
 export type GetTransactionHistoryResponseType = Awaited<ReturnType<typeof getTransactionsHistory>>
 
 async function getTransactionsHistory(userId: string, from: Date, to: Date) {
-    const userSettings = await prisma.userSettings.findUnique({
-        where: {
-            userId
-        }
-    })
+    const userSettings = await UserSettingsModel.query().findById(userId);
     if(!userSettings) {
         throw new Error('User settings not found')
     }
 
-    const formatter = GetFormatterForCurrency(userSettings.currency)
+    const formatter = GetFormatterForCurrency(userSettings.currency);
+    const fromDay = new Date(from.setHours(0, 0, 0, 0));
+    const toDay = new Date(to.setHours(23, 59, 59, 999));
 
-    const transactions = await prisma.transaction.findMany({
-        where: {
-            userId,
-            date:{
-                gte: new Date(from.setHours(0, 0, 0, 0)),
-                lte: new Date(to.setHours(23, 59, 59, 999))
-            }
-        },
-        orderBy: {
-            date: 'desc'
-        }
-    })
+    const transactions = await TransactionModel.query()
+        .where("userId", userId)
+        .whereBetween("date", [fromDay, toDay])
+        .orderBy("date", "desc");
 
     return transactions.map(transaction => ({
-        ...transaction,        
+        ...transaction,
         formattedAmount: formatter.format(transaction.amount)
     }))
 }

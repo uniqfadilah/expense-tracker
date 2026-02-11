@@ -2,7 +2,7 @@
 
 import { DateRangePicker } from '@/components/ui/date-range-picker'
 import { MAX_DATE_RANGE_DAYS } from '@/lib/constants'
-import { UserSettings } from '@prisma/client'
+import { UserSettings } from '@/lib/db-types'
 import { differenceInDays, startOfMonth } from 'date-fns'
 import React from 'react'
 import { toast } from 'sonner'

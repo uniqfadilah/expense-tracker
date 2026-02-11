@@ -1,6 +1,6 @@
 'use client'
 
-import { Category } from '@prisma/client'
+import { Category } from '@/lib/db-types'
 import React from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { DeleteCategory } from '../_actions/categories'

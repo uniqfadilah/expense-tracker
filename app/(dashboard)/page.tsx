@@ -1,7 +1,7 @@
 import React from 'react'
 import { currentUser } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
-import { prisma } from '@/lib/prisma'
+import { UserSettingsModel } from '@/lib/models'
 import { Button } from '@/components/ui/button'
 import CreateTransactionDialog from './_components/create-transaction-dialog'
 import Overview from './_components/overview'
@@ -14,11 +14,7 @@ async function Page() {
     redirect('/sign-in')
   }
 
-  const userSettings = await prisma.userSettings.findUnique({
-    where: {
-      userId: user.id,
-    },
-  })
+  const userSettings = await UserSettingsModel.query().findById(user.id)
 
   if (!userSettings) {
     redirect('/wizard')

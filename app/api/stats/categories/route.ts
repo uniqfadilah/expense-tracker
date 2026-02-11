@@ -1,5 +1,5 @@
 import { OverviewQuerySchema } from "@/components/schema/overview";
-import { prisma } from "@/lib/prisma";
+import { TransactionModel } from "@/lib/models";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
@@ -34,24 +34,16 @@ export type GetCategoriesStatsResponseType = Awaited<
 >;
 
 async function getCategoriesStats(userId: string, from: Date, to: Date) {
-    const stats = await prisma.transaction.groupBy({
-        by: ['type', 'category', 'categoryIcon'],
-        where:{
-            userId,
-            date: {
-                gte: new Date(from.setHours(0, 0, 0, 0)),
-                lte: new Date(to.setHours(23, 59, 59, 999))
-            }
-        },
-        _sum: {
-            amount: true
-        },
-        orderBy: {
-            _sum: {
-                amount: 'desc'
-            }
-        }
-    })
+    const fromDay = new Date(from.setHours(0, 0, 0, 0));
+    const toDay = new Date(to.setHours(23, 59, 59, 999));
 
-    return stats
+    const stats = await TransactionModel.query()
+        .where("userId", userId)
+        .whereBetween("date", [fromDay, toDay])
+        .select("type", "category", "categoryIcon")
+        .sum("amount as amount")
+        .groupBy("type", "category", "categoryIcon")
+        .orderBy("amount", "desc");
+
+    return stats.map((row: { amount: string }) => ({ ...row, _sum: { amount: Number(row.amount) }, amount: Number(row.amount) }));
 }

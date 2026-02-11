@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { UserSettingsModel } from "@/lib/models";
 import { currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -10,22 +10,15 @@ export async function GET(request: Request) {
         redirect('/sign-in')
     }
 
-    let userSettings = await prisma.userSettings.findUnique({
-        where: {
-            userId: user.id
-        }
-    })
+    let userSettings = await UserSettingsModel.query().findById(user.id);
 
     if(!userSettings) {
-        userSettings = await prisma.userSettings.create({
-            data: {
-                userId: user.id,
-                currency: 'IDR', 
-            }
-        })
+        userSettings = await UserSettingsModel.query().insertAndFetch({
+            userId: user.id,
+            currency: 'IDR',
+        });
     }
 
-    // Reavlidate the home page that uses the user currency
     revalidatePath('/')
     return Response.json(userSettings)
 }

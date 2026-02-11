@@ -1,5 +1,5 @@
 import { GetCategoriesStatsResponseType } from '@/app/api/stats/categories/route'
-import { UserSettings } from '@prisma/client'
+import { UserSettings } from '@/lib/db-types'
 import React from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { GetFormatterForCurrency } from '@/lib/helpers'

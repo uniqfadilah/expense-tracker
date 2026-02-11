@@ -1,7 +1,7 @@
 "use server"
 
 import { CreateCategorySchema, CreateCategorySchemaType, DeleteCategorySchema, DeleteCategorySchemaType } from "@/components/schema/categories";
-import { prisma } from "@/lib/prisma";
+import { CategoryModel } from "@/lib/models";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
@@ -17,14 +17,12 @@ export async function CreateCategory(form: CreateCategorySchemaType) {
     }
 
     const {name, icon, type} = parsedBody.data
-    return await prisma.category.create({
-        data: {
-            name,
-            icon,
-            type,
-            userId: user.id
-        }
-    })
+    return await CategoryModel.query().insertAndFetch({
+        name,
+        icon,
+        type,
+        userId: user.id,
+    });
 }
 
 export async function DeleteCategory(form: DeleteCategorySchemaType) {
@@ -38,13 +36,11 @@ export async function DeleteCategory(form: DeleteCategorySchemaType) {
         redirect('/sign-in')
     }
 
-    return await prisma.category.delete({
-        where: {
-            name_userId_type: {
-                userId: user.id,
-                name: parsedBody.data.name,
-                type: parsedBody.data.type
-            }            
-        }
-    })
+    await CategoryModel.query()
+        .where({
+            userId: user.id,
+            name: parsedBody.data.name,
+            type: parsedBody.data.type,
+        })
+        .delete();
 }

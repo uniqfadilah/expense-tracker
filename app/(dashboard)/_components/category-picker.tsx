@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect } from 'react'
 import { TransactionType } from '@/lib/types'
 import { useQuery } from '@tanstack/react-query'
-import { Category } from '@prisma/client'
+import { Category } from '@/lib/db-types'
 import {
   Popover,
   PopoverContent,

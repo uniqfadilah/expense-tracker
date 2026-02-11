@@ -1,6 +1,6 @@
 "use server"
 
-import { prisma } from "@/lib/prisma";
+import { UserSettingsModel } from "@/lib/models";
 import { UpdateUserCurrencySchema } from "@/components/schema/userSettings"
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
@@ -19,14 +19,7 @@ export async function UpdateUserCurrency(currency: string){
         redirect('/sign-in')
     }
 
-    const userSettings = await prisma.userSettings.update({
-        where: {
-            userId: user.id
-        },
-        data: {
-            currency,
-        }
-    })
-
+    const userSettings = await UserSettingsModel.query().patchAndFetchById(user.id, { currency });
+    if (!userSettings) throw new Error("User settings not found");
     return userSettings;
-}   
+}

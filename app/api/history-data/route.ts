@@ -1,8 +1,6 @@
-import { prisma } from "@/lib/prisma";
+import { MonthHistoryModel, YearHistoryModel } from "@/lib/models";
 import { Period, Timeframe } from "@/lib/types";
 import { currentUser } from "@clerk/nextjs/server";
-import { Return } from "@prisma/client/runtime/library";
-import { get } from "http";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
@@ -49,28 +47,21 @@ async function getHistoryData(userId: string, timeframe: Timeframe, period: Peri
 }
 
 type HistoryData = {
-    expense: number,
-    income: number,
-    year: number,
-    month: number,
-    day?: number
+    expense: number;
+    income: number;
+    year: number;
+    month: number;
+    day?: number;
 }
 
 async function getYearHistoryData(userId: string, year: number) {
-    const result = await prisma.yearHistory.groupBy({
-        by: ['month'],
-        where: {
-            userId,
-            year
-        },
-        _sum: {
-            expenses: true,
-            income: true
-        },
-        orderBy: {
-            month: 'asc'
-        }
-    })
+    const result = await YearHistoryModel.query()
+        .where({ userId, year })
+        .select("month")
+        .sum("expenses as expenses")
+        .sum("income as income")
+        .groupBy("month")
+        .orderBy("month", "asc");
 
     if(!result || result.length === 0) return []
     
@@ -80,10 +71,10 @@ async function getYearHistoryData(userId: string, year: number) {
         let expense = 0
         let income = 0
 
-        const month = result.find((row) => row.month === i)
+        const month = result.find((row: { month: number }) => row.month === i)
         if(month){
-            expense = month._sum.expenses || 0
-            income = month._sum.income || 0
+            expense = Number(month.expenses ?? 0)
+            income = Number(month.income ?? 0)
         }
 
         history.push({year, month: i, expense, income})
@@ -93,37 +84,27 @@ async function getYearHistoryData(userId: string, year: number) {
 }
 
 async function getMonthHistoryData(userId: string, year: number, month: number) {
-    const result = await prisma.monthHistory.groupBy({
-        by: ['day'],
-        where: {
-            userId,
-            year,
-            month
-        },
-        _sum: {
-            expenses: true,
-            income: true
-        },
-        orderBy: [
-            {
-                day: 'asc'
-            }
-        ]
-    })
+    const result = await MonthHistoryModel.query()
+        .where({ userId, year, month })
+        .select("day")
+        .sum("expenses as expenses")
+        .sum("income as income")
+        .groupBy("day")
+        .orderBy("day", "asc");
 
     if(!result || result.length === 0) return []
     
     const history: HistoryData[] = []
-
     const daysIntoMonth = new Date(year, month + 1, 0).getDate()
+
     for(let i = 0; i <= daysIntoMonth; i++){
         let expense = 0
         let income = 0
 
-        const day = result.find((row) => row.day === i)
+        const day = result.find((row: { day: number }) => row.day === i)
         if(day){
-            expense = day._sum.expenses || 0
-            income = day._sum.income || 0
+            expense = Number(day.expenses ?? 0)
+            income = Number(day.income ?? 0)
         }
 
         history.push({

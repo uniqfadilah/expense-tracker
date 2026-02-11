@@ -8,7 +8,8 @@ A simple, efficient, and user-friendly expense tracker that helps you manage you
 - **Clerk** – User authentication and management  
 - **Tailwind CSS** – Utility-first CSS framework for sleek, responsive designs  
 - **ShadCN** – Beautiful UI components for a polished interface  
-- **Prisma** – ORM for efficient database management  
+- **Knex.js** – SQL query builder with PostgreSQL  
+- **Objection.js** – ORM on top of Knex (models and relations)  
 
 ## ✨ Features
 
@@ -37,8 +38,9 @@ A simple, efficient, and user-friendly expense tracker that helps you manage you
 
 4. **Run database migrations:**
    ```bash
-   npx prisma migrate dev
+   npm run db:migrate
    ```
+   (or `npx knex migrate:latest`)
 
 5. **Start the development server:**
    ```bash
@@ -66,7 +68,7 @@ The app can run fully in Docker with PostgreSQL:
 
 - **PostgreSQL** runs on port `5432` (user: `expense`, password: `expense_secret`, database: `expense_tracker`).
 - The app runs migrations on startup, then starts the Next.js server.
-- For local development against the same DB, use `.env.example` and run `docker compose up postgres -d`, then `npm run dev` and `npx prisma migrate dev` as needed.
+- For local development against the same DB, use `.env.example` and run `docker compose up postgres -d`, then `npm run db:migrate` and `npm run dev`.
 
 ## 📈 Future Improvements
 

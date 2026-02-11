@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/popover'
 import { Currencies, Currency } from '@/lib/currencies'
 import SkeletonWrapper from './skeleton-wrapper'
-import { UserSettings } from '@prisma/client'
+import { UserSettings } from '@/lib/db-types'
 import { UpdateUserCurrency } from '@/app/wizard/_actions/userSettings'
 
 export function CurrencyComboBox() {

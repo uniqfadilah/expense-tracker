@@ -1,80 +1,61 @@
 "use server"
 
-
-import { prisma } from "@/lib/prisma";
+import { MonthHistoryModel, TransactionModel, YearHistoryModel } from "@/lib/models";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 export async function DeleteTransaction(id: string) {
-    console.log("Deleting transaction with ID:", id); // Debug log
     const user = await currentUser()
     if(!user) {
         redirect('/sign-in')
     }
 
-    const transaction = await prisma.transaction.findUnique({
-        where: {
-            id,
-            userId: user.id,
-            
-        }
-    })
+    const transaction = await TransactionModel.query().findOne({
+        id,
+        userId: user.id,
+    });
 
     if(!transaction) {
         throw new Error('Transaction not found')
     }
 
-    await prisma.$transaction([
-        prisma.transaction.delete({
-            where: {
-                id,
-                userId: user.id,                
-            }
-        }),
+    const d = transaction.date instanceof Date ? transaction.date : new Date(transaction.date);
+    const day = d.getDate();
+    const month = d.getMonth();
+    const year = d.getFullYear();
 
-        prisma.monthHistory.update({
-            where: {
-                day_month_year_userId:{
-                    userId: user.id,
-                    day: transaction.date.getDate(),
-                    month: transaction.date.getMonth(),
-                    year: transaction.date.getFullYear()
-                }
-            },
-            data: {
-                ...(transaction.type === 'expense' && {
-                    expenses: {
-                        decrement: transaction.amount
-                    }
-                }),
-                ...(transaction.type === 'income' && {
-                    income: {
-                        decrement: transaction.amount
-                    }
-                })
-            }
-        }),
+    await TransactionModel.transaction(async (trx) => {
+        await TransactionModel.query(trx).where({ id, userId: user.id }).delete();
 
-        prisma.yearHistory.update({
-            where: {
-                month_year_userId:{
-                    userId: user.id,
-                    month: transaction.date.getMonth(),
-                    year: transaction.date.getFullYear()
-                }
-            },
-            data: {
-                ...(transaction.type === 'expense' && {
-                    expenses: {
-                        decrement: transaction.amount
-                    }
-                }),
-                ...(transaction.type === 'income' && {
-                    income: {
-                        decrement: transaction.amount
-                    }
-                })
-            }
-        })
-    ])
+        const monthRow = await MonthHistoryModel.query(trx).findOne({
+            userId: user.id,
+            day,
+            month,
+            year,
+        });
+
+        if (monthRow) {
+            await MonthHistoryModel.query(trx)
+                .where({ userId: user.id, day, month, year })
+                .patch({
+                    income: monthRow.income - (transaction.type === "income" ? transaction.amount : 0),
+                    expenses: monthRow.expenses - (transaction.type === "expense" ? transaction.amount : 0),
+                });
+        }
+
+        const yearRow = await YearHistoryModel.query(trx).findOne({
+            userId: user.id,
+            month,
+            year,
+        });
+
+        if (yearRow) {
+            await YearHistoryModel.query(trx)
+                .where({ userId: user.id, month, year })
+                .patch({
+                    income: yearRow.income - (transaction.type === "income" ? transaction.amount : 0),
+                    expenses: yearRow.expenses - (transaction.type === "expense" ? transaction.amount : 0),
+                });
+        }
+    });
 }

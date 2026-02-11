@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { CategoryModel } from "@/lib/models";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -20,16 +20,9 @@ export async function GET(request: Request){
     }
 
     const type = queryParams.data;
-    const categories = await prisma.category.findMany({
-        where:{
-            userId: user.id,
-            ...(type && {type}),
-
-        },
-        orderBy:{
-            name: 'asc'
-        }     
-    })
+    let query = CategoryModel.query().where("userId", user.id).orderBy("name", "asc");
+    if (type) query = query.where("type", type);
+    const categories = await query;
 
     return Response.json(categories);
 }

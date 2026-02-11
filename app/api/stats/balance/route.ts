@@ -1,5 +1,5 @@
 import { OverviewQuerySchema } from "@/components/schema/overview";
-import { prisma } from "@/lib/prisma";
+import { TransactionModel } from "@/lib/models";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
@@ -34,22 +34,21 @@ export type GetBalanceStatsResponseType = Awaited<
 >;
 
 async function getBalanceStats(userId: string, from: Date, to: Date) {
-    const totals = await prisma.transaction.groupBy({
-        by: ['type'],
-        where:{
-            userId,
-            date: {
-                gte: new Date(from.setHours(0, 0, 0, 0)),
-                lte: new Date(to.setHours(23, 59, 59, 999))
-            }
-        },
-        _sum: {
-            amount: true
-        }
-    })
+    const fromDay = new Date(from.setHours(0, 0, 0, 0));
+    const toDay = new Date(to.setHours(23, 59, 59, 999));
 
-    return{
-        expense: totals.find(t => t.type === 'expense')?._sum?.amount || 0,
-        income: totals.find(t => t.type === 'income')?._sum?.amount || 0
-    }
+    const rows = await TransactionModel.query()
+        .where("userId", userId)
+        .whereBetween("date", [fromDay, toDay])
+        .select("type")
+        .sum("amount as total")
+        .groupBy("type");
+
+    const expense = rows.find((r: { type: string }) => r.type === "expense");
+    const income = rows.find((r: { type: string }) => r.type === "income");
+
+    return {
+        expense: expense ? Number(expense.total) : 0,
+        income: income ? Number(income.total) : 0,
+    };
 }
