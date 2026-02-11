@@ -1,17 +1,8 @@
 import './globals.css'
 import type { Metadata } from 'next'
-import { Poppins } from 'next/font/google'
 import { ClerkProvider } from '@clerk/nextjs'
 import RootProviders from '@/components/providers/root-providers'
 import { Toaster } from 'sonner'
-
-const poppins = Poppins({
-  weight: ['400', '500', '600', '700'],
-  subsets: ['latin'],
-  variable: '--font-poppins',
-  display: 'swap',
-  adjustFontFallback:  false,
-})
 
 export const metadata: Metadata = {
   title: 'Expense Tracker',
@@ -32,7 +23,13 @@ export default function RootLayout({
       afterSignOutUrl="/sign-in"
     >
       <html lang="en" suppressHydrationWarning>
-        <body className={poppins.variable}>
+        <head>
+          <link
+            href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+          />
+        </head>
+        <body>
           <RootProviders>{children}</RootProviders>
           <Toaster richColors position="bottom-right" />
         </body>
