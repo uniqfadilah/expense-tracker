@@ -15,8 +15,8 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
-# Increase Node heap size for Next.js build (avoids "JavaScript heap out of memory")
-ENV NODE_OPTIONS="--max-old-space-size=4096"
+# Increase Node heap for Next.js build (GC during deserialization / OOM)
+ENV NODE_OPTIONS="--max-old-space-size=8192"
 RUN npm run build
 
 FROM base AS runner
